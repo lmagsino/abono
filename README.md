@@ -1,3 +1,5 @@
+<div align="center">
+
 # Abono
 
 **An AI operating system for employer-funded salary advances in the Philippines.**
@@ -8,30 +10,103 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)](abono-web/package.json)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%2B%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white)](#database)
 
+</div>
+
 ---
 
-## The problem
+## What Abono is
 
-Payday in the Philippines is usually twice a month. Expenses are not.
+Abono turns wages a worker has already earned into money they can reach before
+payday — funded by their employer, repaid through the payroll deduction that
+employer already runs. No lender. No credit check. No interest to the employee.
 
-When a medical bill or tuition payment lands mid-cycle, workers reach for the
-options within arm's reach: the office lending circle, a `5-6` informal lender
-charging 20% flat over weeks, or a salary loan that quietly compounds. Money
-already earned — sitting in a payroll system, unpaid only because of a
-calendar — ends up costing a month's interest to access early.
+It is built as an operating system rather than a payments feature, because the
+transfer is the easy part. The system that surrounds it does the real work:
 
-Abono makes earned wages reachable before payday. Employers fund the advances,
-so there is no third-party lender, no credit check, and no interest charged to
-the employee. Repayment happens through the existing payroll deduction the
-employer already runs.
+- **An eligibility engine** that decides who can borrow how much, using
+  deterministic rules — tenure, attendance, request frequency, outstanding
+  balance — that a person can read, audit, and defend to a regulator.
+- **A double-entry ledger** where every peso disbursed and repaid is recorded,
+  and which reconciles against payroll cleanly at the end of every cycle.
+- **Disbursement over InstaPay and PESONet**, so money lands in the worker's
+  own bank or e-wallet within minutes of approval.
+- **An AI layer** that explains decisions in plain language, answers employee
+  questions, parses whatever CSV shape an HRIS exports, and lets an HR admin
+  ask about their workforce in a sentence instead of a report builder.
+- **Multi-tenancy from the first migration**, so each employer sees their own
+  workforce and nothing else.
 
-The hard problems are not the transfers. They are deciding *who* can borrow
-*how much* without pushing anyone into a debt spiral, keeping a ledger that
-reconciles cleanly against payroll every cycle, and explaining both to a worker
-in language that does not require a finance degree.
+Two employers, two very different users: a worker on a mid-range Android phone
+who needs an answer in seconds, and an HR administrator reconciling hundreds of
+deductions against a payroll run.
 
 > **Abono** — Filipino, from Spanish. To shoulder a cost on someone's behalf,
 > with the understanding that it comes back. *"Abonohan mo muna ako."*
+
+---
+
+## How it works
+
+From the worker's side, the whole thing is four steps and a payday.
+
+```mermaid
+flowchart LR
+    A["<b>1 · Request</b><br/>Opens the app,<br/>asks for ₱3,000"]
+    B["<b>2 · Decision</b><br/>Checked against<br/>their earned wages<br/><i>seconds</i>"]
+    C["<b>3 · Money arrives</b><br/>Sent to their bank<br/>or e-wallet<br/><i>minutes</i>"]
+    D["<b>4 · Payday</b><br/>₱3,000 deducted<br/>from payroll<br/><i>automatic</i>"]
+    E["<b>Settled</b><br/>Nothing owed.<br/>No interest."]
+
+    A --> B --> C --> D --> E
+
+    classDef step fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a
+    classDef done fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class A,B,C,D step
+    class E done
+```
+
+Nothing is borrowed from a lender. The money is the worker's own earned wages,
+released early by the employer:
+
+```mermaid
+flowchart LR
+    subgraph cycle["A single pay cycle"]
+        direction LR
+        emp["<b>Employer</b><br/>funds the float"]
+        abono["<b>Abono</b><br/>checks eligibility,<br/>keeps the ledger"]
+        worker["<b>Worker</b><br/>receives ₱3,000<br/>mid-cycle"]
+        payroll["<b>Payroll</b><br/>deducts ₱3,000<br/>on payday"]
+    end
+
+    emp -->|"advance funded"| abono
+    abono -->|"InstaPay / PESONet"| worker
+    worker -->|"earns the rest<br/>of the cycle"| payroll
+    payroll -->|"employer made whole"| emp
+
+    classDef money fill:#fefce8,stroke:#ca8a04,color:#713f12
+    classDef sys fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class emp,worker,payroll money
+    class abono sys
+```
+
+The loop closes every cycle. The employer is repaid in full, the worker pays
+nothing extra, and no third party takes a cut in between — which is the entire
+point.
+
+### What the employer sees
+
+```mermaid
+flowchart TB
+    hr["<b>HR Administrator</b>"]
+
+    hr --> setup["Set up the company<br/><i>rules, limits, float</i>"]
+    hr --> roster["Upload the roster<br/><i>any HRIS export</i>"]
+    hr --> monitor["Watch the float<br/><i>what is out, what is due</i>"]
+    hr --> recon["Reconcile payday<br/><i>deductions matched<br/>to advances</i>"]
+
+    classDef admin fill:#f5f3ff,stroke:#8b5cf6,color:#4c1d95
+    class hr,setup,roster,monitor,recon admin
+```
 
 ---
 
@@ -105,10 +180,9 @@ flowchart TB
 
 ---
 
-## How an advance works
+## The same flow, technically
 
-The full lifecycle, end to end. **This flow is designed, not yet implemented** —
-Phase 1 delivers the scaffolding it will run on.
+**Designed, not yet implemented** — Phase 1 delivers the scaffolding it runs on.
 
 ```mermaid
 sequenceDiagram
@@ -148,11 +222,10 @@ sequenceDiagram
 
 Two things this diagram is quietly insisting on:
 
-- **Eligibility is deterministic, never a model.** Rules a person can read,
-  audit, and defend to a regulator. AI explains a decision after the fact; it
-  never makes one.
+- **Eligibility is deterministic, never a model.** AI explains a decision after
+  the fact; it never makes one.
 - **A declined request returns a reason code.** "No" without a why is how
-  workers lose trust in a system that is meant to be on their side.
+  workers lose trust in a system meant to be on their side.
 
 ---
 
@@ -346,9 +419,4 @@ was built to replace.
 
 ---
 
-## Author
-
-**Leo Magsino Jr.**
-[github.com/lmagsino](https://github.com/lmagsino)
-
-Built and maintained solo.
+<sub>Leo Magsino Jr. · [github.com/lmagsino](https://github.com/lmagsino)</sub>
