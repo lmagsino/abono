@@ -16,7 +16,13 @@ TENANTS = [
     contact_email: "maria.santos@bayanihanfoods.ph",
     contact_phone: "+63 917 555 0142",
     disbursement_provider: "paymongo",
-    disbursement_wallet_reference: "wlt_test_bayanihan_001"
+    disbursement_wallet_reference: "wlt_test_bayanihan_001",
+    # Deliberately stricter than the defaults, so the two tenants exercise
+    # different policy against the same engine.
+    min_tenure_months: 6,
+    min_attendance_rate: 0.90,
+    max_advances_per_cycle: 1,
+    max_outstanding_percentage: 0.40
   },
   {
     name: "Sampaguita BPO Services Inc.",
@@ -26,6 +32,7 @@ TENANTS = [
     contact_phone: "+63 918 555 0277",
     disbursement_provider: "xendit",
     disbursement_wallet_reference: "wlt_test_sampaguita_001"
+    # Left on the schema defaults: 3 months, 85%, 2 per cycle, 50% cap.
   }
 ].freeze
 
