@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_10_100400) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_11_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -98,11 +98,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_10_100400) do
     t.datetime "created_at", null: false
     t.string "disbursement_provider"
     t.string "disbursement_wallet_reference"
+    t.integer "max_absences_per_month", default: 5, null: false
+    t.integer "max_advances_per_cycle", default: 2, null: false
+    t.decimal "max_outstanding_percentage", precision: 5, scale: 4, default: "0.5", null: false
+    t.decimal "min_attendance_rate", precision: 5, scale: 4, default: "0.85", null: false
+    t.integer "min_tenure_months", default: 3, null: false
     t.string "name", null: false
+    t.decimal "service_fee_percentage", precision: 5, scale: 4, default: "0.02", null: false
     t.string "slug", null: false
     t.datetime "updated_at", null: false
     t.index ["disbursement_wallet_reference"], name: "index_tenants_on_disbursement_wallet_reference", unique: true, where: "(disbursement_wallet_reference IS NOT NULL)"
     t.index ["slug"], name: "index_tenants_on_slug", unique: true
+    t.check_constraint "max_advances_per_cycle >= 0", name: "tenants_max_advances_non_negative"
+    t.check_constraint "max_outstanding_percentage > 0::numeric AND max_outstanding_percentage <= 1::numeric", name: "tenants_max_outstanding_fraction"
+    t.check_constraint "min_attendance_rate >= 0::numeric AND min_attendance_rate <= 1::numeric", name: "tenants_min_attendance_rate_fraction"
+    t.check_constraint "min_tenure_months >= 0", name: "tenants_min_tenure_non_negative"
+    t.check_constraint "service_fee_percentage >= 0::numeric AND service_fee_percentage <= 1::numeric", name: "tenants_service_fee_fraction"
   end
 
   add_foreign_key "advances", "employees"

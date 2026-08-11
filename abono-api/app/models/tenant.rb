@@ -15,5 +15,13 @@ class Tenant < ApplicationRecord
   validates :contact_email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :disbursement_wallet_reference, uniqueness: true, allow_nil: true
 
+  # Advance policy. EligibilityEngine reads these; nothing else should.
+  validates :min_tenure_months, :max_absences_per_month, :max_advances_per_cycle,
+    numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :min_attendance_rate, :service_fee_percentage,
+    numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 1 }
+  validates :max_outstanding_percentage,
+    numericality: { greater_than: 0, less_than_or_equal_to: 1 }
+
   scope :active, -> { where(active: true) }
 end
