@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_11_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_090100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -20,6 +20,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_090000) do
     t.decimal "amount_requested", precision: 12, scale: 2, null: false
     t.datetime "created_at", null: false
     t.datetime "decided_at"
+    t.jsonb "decision"
     t.datetime "disbursed_at"
     t.bigint "employee_id", null: false
     t.datetime "requested_at", null: false
@@ -92,6 +93,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_090000) do
 
   create_table "tenants", force: :cascade do |t|
     t.boolean "active", default: true, null: false
+    t.string "api_key_digest"
+    t.datetime "api_key_generated_at"
     t.string "contact_email", null: false
     t.string "contact_name", null: false
     t.string "contact_phone"
@@ -107,6 +110,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_090000) do
     t.decimal "service_fee_percentage", precision: 5, scale: 4, default: "0.02", null: false
     t.string "slug", null: false
     t.datetime "updated_at", null: false
+    t.index ["api_key_digest"], name: "index_tenants_on_api_key_digest", unique: true
     t.index ["disbursement_wallet_reference"], name: "index_tenants_on_disbursement_wallet_reference", unique: true, where: "(disbursement_wallet_reference IS NOT NULL)"
     t.index ["slug"], name: "index_tenants_on_slug", unique: true
     t.check_constraint "max_advances_per_cycle >= 0", name: "tenants_max_advances_non_negative"
