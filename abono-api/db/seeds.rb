@@ -206,6 +206,18 @@ ActiveRecord::Base.transaction do
     tenant = Tenant.find_or_initialize_by(slug: attrs[:slug])
     tenant.update!(attrs)
 
+    # Deterministic keys locally, so the one printed below keeps working across
+    # re-seeds and can be pasted into a REST client. Real keys are random and
+    # shown once; these exist only because a developer who cannot reproduce
+    # their key ends up disabling auth to get work done.
+    if Rails.env.local?
+      dev_key = "#{Tenant::KEY_PREFIX}dev_#{attrs[:slug].tr('-', '_')}"
+      tenant.update!(
+        api_key_digest: Tenant.digest_api_key(dev_key),
+        api_key_generated_at: Time.current
+      )
+    end
+
     ActsAsTenant.with_tenant(tenant) do
       EMPLOYEES.fetch(attrs[:slug]).each do |row|
         history = row[:history]
@@ -248,6 +260,7 @@ Tenant.order(:name).each do |tenant|
     end
 
     puts "\n#{tenant.name} (#{tenant.slug}) — #{Employee.count} employees, #{Advance.count} advances"
+    puts "  api key: #{Tenant::KEY_PREFIX}dev_#{tenant.slug.tr('-', '_')}" if Rails.env.local?
     if outstanding.any?
       outstanding.each { |name, balance| puts "  outstanding: #{name} PHP #{'%.2f' % balance}" }
     else
