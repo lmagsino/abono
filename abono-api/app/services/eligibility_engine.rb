@@ -65,7 +65,16 @@ class EligibilityEngine
     @as_of = as_of
   end
 
+  # Runs inside the employee's own tenant rather than inheriting whatever the
+  # caller happened to have set, so the frequency count cannot be widened or
+  # narrowed by ambient context. Matches LedgerService, which does the same.
   def call
+    ActsAsTenant.with_tenant(tenant) { evaluate }
+  end
+
+  private
+
+  def evaluate
     outstanding = LedgerService.balance_for(employee)
     cap = advance_cap
     available = [ cap - outstanding, BigDecimal("0") ].max
@@ -93,8 +102,6 @@ class EligibilityEngine
       evaluated_at: Time.current
     )
   end
-
-  private
 
   attr_reader :employee, :tenant, :amount, :as_of
 

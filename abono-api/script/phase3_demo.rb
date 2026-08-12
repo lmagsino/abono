@@ -30,6 +30,10 @@ def show_decision(employee, amount)
   decision
 end
 
+# This script deliberately reaches across both tenants to compare their
+# policies, which require_tenant blocks by default. The services still scope
+# themselves internally — without_tenant only relaxes the direct queries here.
+ActsAsTenant.without_tenant do
 ActiveRecord::Base.transaction do
   bayanihan = Tenant.find_by!(slug: "bayanihan-foods")
   sampaguita = Tenant.find_by!(slug: "sampaguita-bpo")
@@ -166,7 +170,7 @@ ActiveRecord::Base.transaction do
   puts "  matched this time: #{replay.matched.size}"
 
   heading "LEDGER INTEGRITY — every entry still folds to its balance_after"
-  broken = Employee.unscoped.includes(:ledger_entries).reject do |employee|
+  broken = Employee.includes(:ledger_entries).reject do |employee|
     running = BigDecimal("0")
     employee.ledger_entries.sort_by { |e| [ e.created_at, e.id ] }
       .all? { |e| running += e.amount; running == e.balance_after }
@@ -177,4 +181,5 @@ ActiveRecord::Base.transaction do
   puts "Rolling back — the database is left exactly as the seeds made it."
   puts "#{'═' * 78}"
   raise ActiveRecord::Rollback
+end
 end

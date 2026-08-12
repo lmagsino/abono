@@ -1,7 +1,12 @@
 ActsAsTenant.configure do |config|
-  # Left permissive while the API surface is still being built (Phase 2/3):
-  # console sessions, migrations and seeds all query without a current tenant.
-  # Flip to true once controllers set the tenant on every request, so that an
-  # unscoped query raises instead of silently reading across tenants.
-  config.require_tenant = false
+  # A scoped query with no current tenant now raises instead of silently
+  # reading across employers. This is the difference between a missing scope
+  # being a caught error and being a data leak, and it is only safe to turn on
+  # because Api::V1::BaseController establishes the tenant before any action.
+  #
+  # Code that legitimately works across tenants — seeds, rake tasks, console
+  # sessions, the ledger integrity sweep — says so explicitly with
+  # ActsAsTenant.without_tenant { }. Being made to name that intent is the
+  # point: cross-tenant access should be visible in the code that does it.
+  config.require_tenant = true
 end

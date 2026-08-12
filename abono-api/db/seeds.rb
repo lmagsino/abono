@@ -232,9 +232,13 @@ ActiveRecord::Base.transaction do
   end
 end
 
-puts "Seeded #{Tenant.count} tenants, #{Employee.count} employees, " \
-     "#{Advance.count} advances, #{LedgerEntry.count} ledger entries, " \
-     "#{Repayment.count} repayments."
+# Totals across every tenant, which is exactly the kind of query require_tenant
+# blocks by default — said out loud here rather than worked around.
+ActsAsTenant.without_tenant do
+  puts "Seeded #{Tenant.count} tenants, #{Employee.count} employees, " \
+       "#{Advance.count} advances, #{LedgerEntry.count} ledger entries, " \
+       "#{Repayment.count} repayments."
+end
 
 Tenant.order(:name).each do |tenant|
   ActsAsTenant.with_tenant(tenant) do
