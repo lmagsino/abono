@@ -89,5 +89,4 @@ module ApiSerializer
       as_of: summary[:as_of].iso8601
     )
   end
-
 end
