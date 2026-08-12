@@ -26,6 +26,21 @@ class LedgerService
       scoped(employee.tenant) { employee.ledger_entries.sum(:amount) }
     end
 
+    # Balances for many employees in one query. balance_for in a loop is an
+    # N+1 that only shows up once an employer has a real roster, so list
+    # endpoints use this instead. Employees with no entries come back as zero
+    # rather than missing.
+    def balances_for(employees)
+      employees = Array(employees)
+      return {} if employees.empty?
+
+      ids = employees.map(&:id)
+      scoped(employees.first.tenant) do
+        totals = LedgerEntry.where(employee_id: ids).group(:employee_id).sum(:amount)
+        ids.index_with { |id| totals[id] || BigDecimal("0") }
+      end
+    end
+
     # Outstanding on a single advance: what it put on the books, less what has
     # been paid against it.
     def outstanding_for(advance)
