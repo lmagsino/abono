@@ -41,7 +41,7 @@ jobs:
         working-directory: abono-api
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -64,7 +64,7 @@ jobs:
         working-directory: abono-web
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Node
         uses: actions/setup-node@v4
